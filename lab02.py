@@ -17,11 +17,13 @@ import os
 import sys
 
 import imageio.v2 as imageio
+from PIL import Image
 import matplotlib.pyplot as plt
 import numpy as np
 
 RESULTS_DIR = "results"
 SHOW = True  # changed by --no-show
+MAX_SIDE = 800  # the lion photo is 3264x4928; shrink it so the J-matrix bonus stays fast
 
 
 # ----------------------------------------------------------------------------
@@ -53,15 +55,19 @@ def clip_u8(a):
 
 
 def load_image(path):
-    """Load the image as a 2-D uint8 matrix (grayscale)."""
+    """Load the image as a 2-D uint8 matrix (grayscale), downscaled to MAX_SIDE."""
     if not os.path.exists(path):
-        print(f"[!] '{path}' not found. Download einstein.jpg into this folder")
+        print(f"[!] '{path}' not found. Put lion.png into this folder")
         print("    (see README). Using a built-in test image so the script still runs.\n")
         y, x = np.mgrid[0:300, 0:260]
         img = (x / 260 * 200 + 30 * np.sin(y / 15)).astype(float)
         img[100:200, 80:180] = 240  # a bright square so flips/rotations are visible
         return clip_u8(img)
-    img = imageio.imread(path)
+    pil = Image.open(path)
+    if max(pil.size) > MAX_SIDE:  # keep aspect ratio, longest side = MAX_SIDE
+        scale = MAX_SIDE / max(pil.size)
+        pil = pil.resize((round(pil.width * scale), round(pil.height * scale)), Image.LANCZOS)
+    img = np.asarray(pil.convert("RGB") if pil.mode not in ("L", "RGB") else pil)
     if img.ndim == 3:  # colour image -> average the colour channels to get gray
         img = img[..., :3].mean(axis=2)
     return clip_u8(img)
@@ -89,7 +95,7 @@ def main(image_path):
     print(f"Minimum pixel value: {minImJPG}")
 
     # ---- Task 5: display original ----------------------------------------------
-    show([ImJPG], ["Einstein Grayscale Image (original)"], "01_original.png", (5, 5))
+    show([ImJPG], ["Lion Grayscale Image (original)"], "01_original.png", (5, 5))
 
     # ---- Task 6: crop central part (submatrix) ----------------------------------
     ImJPG_center = ImJPG[100:m - 100, 100:n - 70]
@@ -205,9 +211,11 @@ def main(image_path):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MFAD Project 2: matrix operations on images")
-    parser.add_argument("--image", default="einstein.jpg", help="path to a grayscale/colour jpg")
+    parser.add_argument("--image", default="lion.png", help="path to a grayscale/colour image (png/jpg)")
+    parser.add_argument("--max-side", type=int, default=800, help="shrink the image so its longest side is at most this many pixels")
     parser.add_argument("--no-show", action="store_true", help="save figures without opening windows")
     args = parser.parse_args()
+    MAX_SIDE = args.max_side
     if args.no_show:
         SHOW = False
     sys.exit(main(args.image))

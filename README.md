@@ -1,7 +1,7 @@
 # MFAD Mini Project: Matrix Operations and Image Manipulation
 
 **Course:** Mathematical Foundations (MFAD), PES University
-**Team members:** <Name 1 (SRN)>, <Name 2 (SRN)>, <Name 3 (SRN)>, <Name 4 (SRN)>
+**Team members:** <Anusha Kiran Vasisht (SRN - PES1UG25AM537)>, <Bhoomi S Ranganagoudra (SRN - PES1UG25AM539)>, <Suhera Khan (SRN - PES1IG25AM563)>, <Anika Panda (SRN - PES1UG25AM550)>
 
 ## About the project
 A grayscale image is stored as a matrix: each element is one pixel from
